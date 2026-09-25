@@ -61,3 +61,16 @@ COMP = {
     'TSS': 13, 'Q': 14, 'TEMP': 15, 'SD1': 16, 'SD2': 17, 'SD3': 18,
     'XD4': 19, 'XD5': 20,
 }
+
+def build_constant_influent(reference_filepath, n_days=5, timestep_days=1 / 1440, temp=15.0):
+    """
+    Build a constant (unchanging) influent by averaging the dry-weather file,
+    repeated for n_days. Used for clean step-response tests (Step 2).
+    """
+    data_in = load_influent(reference_filepath, temp=temp)
+    avg_row = data_in[:, 1:].mean(axis=0)  # average of all 21 components over the whole file
+
+    n_steps = int(n_days / timestep_days) + 1
+    t = np.arange(n_steps) * timestep_days
+    const_block = np.tile(avg_row, (n_steps, 1))
+    return np.column_stack([t, const_block])
