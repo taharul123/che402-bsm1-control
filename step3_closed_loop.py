@@ -27,7 +27,7 @@ SP_SO = 2.0   # g/m3, setpoint for DO in tank 5
 SP_SNO = 1.0  # g/m3, setpoint for nitrate in tank 2
 
 # ---- FOPDT parameters from Step 2 ----
-KLA_K, KLA_TAU, KLA_THETA = 0.01150, 0.0198, 0.1906
+KLA_K, KLA_TAU, KLA_THETA = 0.03776, 0.2417, 0.0001
 QINTR_K, QINTR_TAU, QINTR_THETA = 0.00019, 0.0625, 0.1000
 
 # ---- actuator limits ----
@@ -35,9 +35,8 @@ KLA_MIN, KLA_MAX = 0.0, 240.0
 QINTR_MIN, QINTR_MAX = 0.0, 200000.0
 
 # ---- the two tuning sets we are comparing ----
-kp_kla_aggr, ti_kla_aggr = simc_tuning(KLA_K, KLA_TAU, KLA_THETA)                    # Set 1: aggressive
-kp_kla_soft, _ = simc_tuning(KLA_K, KLA_TAU, KLA_THETA, tc=3 * KLA_THETA)            # Set 2: gentler DO loop
-ti_kla_soft = 4 * KLA_THETA
+kp_kla_aggr, ti_kla_aggr = simc_tuning(KLA_K, KLA_TAU, KLA_THETA, tc=KLA_TAU)        # Set 1: faster (Tc = tau)
+kp_kla_soft, ti_kla_soft = simc_tuning(KLA_K, KLA_TAU, KLA_THETA, tc=3 * KLA_TAU)    # Set 2: gentler (Tc = 3*tau)
 
 kp_qintr_aggr, ti_qintr_aggr = simc_tuning(QINTR_K, QINTR_TAU, QINTR_THETA)          # nitrate loop: keep as-is for both sets
 
