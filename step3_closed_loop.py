@@ -102,6 +102,10 @@ def run_closed_loop(weather_file, weather_label, tuning_name, tuning):
 
     print(f'  DEBUG checksum: so_response.sum()={so_response.sum():.6f}  kla_signal.sum()={kla_signal.sum():.6f}')
     
+    bsm1.finish_evaluation(plot=False)
+    iqi_eval, eqi_eval, mixingenergy, pumpingenergy, aerationenergy = bsm1.get_final_performance()
+    violations = bsm1.get_violations()
+
     iae_so = np.sum(np.abs(so_error)) * TIMESTEP
     iae_so = np.sum(np.abs(so_error)) * TIMESTEP
     iae_sno = np.sum(np.abs(sno_error)) * TIMESTEP
@@ -137,7 +141,14 @@ def run_closed_loop(weather_file, weather_label, tuning_name, tuning):
     plt.close()
     print(f'  saved {outname}')
 
-    return {'iae_so': iae_so, 'ise_so': ise_so, 'iae_sno': iae_sno}
+    print(f'  IQI={iqi_eval:.2f}  EQI={eqi_eval:.2f}  '
+          f'AerationEnergy={aerationenergy:.2f}  PumpingEnergy={pumpingenergy:.2f}  MixingEnergy={mixingenergy:.2f}')
+    print(f'  Effluent violations (SNH > 4 g/m3): {violations}')
+
+    return {'iae_so': iae_so, 'ise_so': ise_so, 'iae_sno': iae_sno,
+            'eqi': eqi_eval, 'aeration_energy': aerationenergy,
+            'pumping_energy': pumpingenergy, 'mixing_energy': mixingenergy,
+            'violations': violations}
 
 
 WEATHER_FILES = {
