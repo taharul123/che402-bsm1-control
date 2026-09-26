@@ -115,6 +115,7 @@ def run_kla_step_test():
 
     # plot
     fig, axes = plt.subplots(2, 1, figsize=(9, 6), sharex=True)
+    axes[0].set_xlim(STEP_TIME - 0.2, STEP_TIME + 0.7)  # zoom in on just the one step transient
     axes[0].plot(sim_t, kla_signal)
     axes[0].set_ylabel('kLa tank 5 [1/d]')
     axes[0].set_title('Step test: kLa (tank 5) -> SO (tank 5)')
@@ -159,6 +160,7 @@ def run_recycle_step_test():
         sno_response[i] = bsm1.y_out2_all[i, SNO_IDX] if i < len(bsm1.y_out2_all) else bsm1.y_out2[SNO_IDX]
 
     fig, axes = plt.subplots(2, 1, figsize=(9, 6), sharex=True)
+    axes[0].set_xlim(STEP_TIME - 0.2, STEP_TIME + 0.7)  # zoom in on just the one step transient
     axes[0].plot(sim_t, qintr_signal)
     axes[0].set_ylabel('Internal recycle flow [m3/d]')
     axes[0].set_title('Step test: internal recycle -> SNO (tank 2)')
