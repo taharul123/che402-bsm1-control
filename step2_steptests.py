@@ -23,7 +23,6 @@ STEP_TIME = 7.0           # day at which we apply the step (roughly mid-file)
 SO_IDX = COMP['SO']
 SNO_IDX = COMP['SNO']
 
-
 def moving_average(x, window):
     """Simple moving average to smooth out the daily diurnal oscillation."""
     if window < 2:
@@ -31,20 +30,39 @@ def moving_average(x, window):
     kernel = np.ones(window) / window
     return np.convolve(x, kernel, mode='same')
 
+def daily_average(time, response):
+    """
+    Collapse a fine time series into one average value per calendar day.
+    Returns (day_times, day_values) -- day_times are day-centers (0.5, 1.5, ...).
+    """
+    day_index = np.floor(time).astype(int)
+    n_days = day_index.max() + 1
+    day_values = np.array([response[day_index == d].mean() for d in range(n_days)])
+    day_times = np.arange(n_days) + 0.5
+    return day_times, day_values
 
-def fit_fopdt(time, response, step_time, u_before, u_after):
+
+def fit_fopdt(time, response, step_time, u_before, u_after,
+              baseline_window=(-3.0, -1.0), steady_window=(4.0, 6.0)):
     """
     Very simple FOPDT fit using the 28.3%/63.2% two-point method.
-    time, response: arrays for the whole run.
-    step_time: day at which the input step happened.
-    u_before, u_after: input values before/after the step (for gain calc).
+    baseline_window: (start, end) days RELATIVE TO the step, both negative,
+        averaged to get a clean "before" value.
+    steady_window: (start, end) days AFTER the step, averaged for the "settled" value.
     """
     mask = time >= step_time
     t_after = time[mask] - step_time
     y_after = response[mask]
 
-    y0 = y_after[0]          # output value right at the moment of the step
-    yss = y_after[-1]        # output value at the end (assumed settled)
+    base_mask = (time >= step_time + baseline_window[0]) & (time <= step_time + baseline_window[1])
+    y0 = response[base_mask].mean() if base_mask.sum() > 0 else y_after[0]
+
+    steady_mask = (t_after >= steady_window[0]) & (t_after <= steady_window[1])
+    if steady_mask.sum() == 0:
+        yss = y_after[-1]
+    else:
+        yss = y_after[steady_mask].mean()
+
     delta_y = yss - y0
     delta_u = u_after - u_before
 
@@ -111,7 +129,8 @@ def run_kla_step_test():
     plt.close()
     print('  saved step2_kla_step_test.png')
 
-    k, tau, theta = fit_fopdt(sim_t, so_smooth, STEP_TIME, kla_before, kla_after)
+    k, tau, theta = fit_fopdt(sim_t, so_response, STEP_TIME, kla_before, kla_after,
+                            baseline_window=(-0.10, -0.01), steady_window=(0.15, 0.30))
     print(f'  Estimated FOPDT for kLa -> SO:  K={k:.5f}  tau={tau:.4f} d  theta={theta:.4f} d')
     return k, tau, theta
 
@@ -154,7 +173,8 @@ def run_recycle_step_test():
     plt.close()
     print('  saved step2_recycle_step_test.png')
 
-    k, tau, theta = fit_fopdt(sim_t, sno_smooth, STEP_TIME, qintr_before, qintr_after)
+    k, tau, theta = fit_fopdt(sim_t, sno_response, STEP_TIME, qintr_before, qintr_after,
+                            baseline_window=(-0.10, -0.01), steady_window=(0.15, 0.30))
     print(f'  Estimated FOPDT for Qintr -> SNO:  K={k:.5f}  tau={tau:.4f} d  theta={theta:.4f} d')
     return k, tau, theta
 
