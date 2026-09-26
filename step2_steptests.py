@@ -106,10 +106,11 @@ def run_kla_step_test():
     kla_signal = np.zeros(n_steps)
 
     for i, t in enumerate(sim_t):
-        if t >= STEP_TIME:
-            bsm1.klas[4] = kla_after
-        kla_signal[i] = bsm1.klas[4]
-        bsm1.step(i)
+        current_kla = kla_after if t >= STEP_TIME else kla_before
+        klas_arr = bsm1.klas.copy()
+        klas_arr[4] = current_kla
+        kla_signal[i] = current_kla
+        bsm1.step(i, klas_arr)
         so_response[i] = bsm1.y_out5_all[i, SO_IDX] if i < len(bsm1.y_out5_all) else bsm1.y_out5[SO_IDX]
 
     # plot
