@@ -140,11 +140,20 @@ def run_closed_loop(weather_file, weather_label, tuning_name, tuning):
     return {'iae_so': iae_so, 'ise_so': ise_so, 'iae_sno': iae_sno}
 
 
+WEATHER_FILES = {
+    'dry': 'dry_data.txt',
+    'rain': 'rain_data.txt',
+    'storm': 'storm_data.txt',
+}
+
 if __name__ == '__main__':
     all_results = {}
-    for tuning_name, tuning in TUNING_SETS.items():
-        all_results[tuning_name] = run_closed_loop('dry_data.txt', 'dry', tuning_name, tuning)
+    for weather_label, weather_file in WEATHER_FILES.items():
+        for tuning_name, tuning in TUNING_SETS.items():
+            key = (weather_label, tuning_name)
+            all_results[key] = run_closed_loop(weather_file, weather_label, tuning_name, tuning)
 
-    print('\n=== Comparison summary (dry weather) ===')
-    for name, res in all_results.items():
-        print(f'{name}: IAE_DO={res["iae_so"]:.4f}  ISE_DO={res["ise_so"]:.4f}  IAE_NO3={res["iae_sno"]:.4f}')
+    print('\n=== Comparison summary (all weathers) ===')
+    for (weather_label, tuning_name), res in all_results.items():
+        print(f'{weather_label:6s} | {tuning_name:25s}: '
+              f'IAE_DO={res["iae_so"]:.4f}  ISE_DO={res["ise_so"]:.4f}  IAE_NO3={res["iae_sno"]:.4f}')
