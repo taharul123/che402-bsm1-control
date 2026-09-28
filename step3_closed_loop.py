@@ -167,4 +167,4 @@ if __name__ == '__main__':
     print('\n=== Comparison summary (all weathers) ===')
     for (weather_label, tuning_name), res in all_results.items():
         print(f'{weather_label:6s} | {tuning_name:25s}: '
-              f'IAE_DO={res["iae_so"]:.4f}  ISE_DO={res["ise_so"]:.4f}  IAE_NO3={res["iae_sno"]:.4f}')
+              f'IAE_DO={res["iae_so"]:.4f}  ISE_DO={res["ise_so"]:.4f}  IAE_NO3={res["iae_sno"]:.4f}') 
